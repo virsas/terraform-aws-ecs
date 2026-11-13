@@ -8,3 +8,7 @@
 
 - Added proper README.md
 - Fixed descriptions
+
+## [v1.2] (2026-11-13)
+
+- Added optional ECR lifecycle policy

@@ -82,3 +82,12 @@ resource "aws_ecr_repository" "vss" {
     scan_on_push = var.ecr_scan_on_push
   }
 }
+
+resource "aws_ecr_lifecycle_policy" "vss" {
+  count = var.ecr_policy_create ? 1 : 0
+
+  repository = var.ecr_name
+  policy     = file("${var.ecr_json_path}/${var.ecr_name}.json")
+
+  depends_on = [aws_ecr_repository.vss]
+}

@@ -9,6 +9,7 @@ A Terraform module for managing [Amazon Elastic Container Service (ECS)](https:/
 - **EFS Volumes**: Optionally attaches an Amazon EFS file system to the task definition as a named volume with a configurable root directory.
 - **Service Management**: Creates an EC2 launch type service with a desired task count, deployment percentage limits and optional steady state waiting.
 - **ECR Repositories**: Creates a container image repository with AES256 or KMS encryption, mutable or immutable tags and optional scan on push.
+- **ECR Lifecycle Policies**: Optionally attaches a lifecycle policy to the ECR repository from `${ecr_json_path}/${ecr_name}.json`.
 - **Independent Toggles**: Every resource is guarded by its own `create` flag, so the module can manage a full stack or a single component.
 
 ---
@@ -48,18 +49,41 @@ module "ecs_cluster" {
 
 ### ECR Repository Example
 
-Create only a container image repository, encrypted with a customer managed KMS key and with immutable tags:
+Create a container image repository encrypted with a customer managed KMS key, immutable tags and a lifecycle policy loaded from `${ecr_json_path}/${ecr_name}.json`.
+
+Given `./json/ecr/vss-api.json`:
+
+```json
+{
+  "rules": [
+    {
+      "rulePriority": 1,
+      "description": "Keep last 30 images",
+      "selection": {
+        "tagStatus": "any",
+        "countType": "imageCountMoreThan",
+        "countNumber": 30
+      },
+      "action": {
+        "type": "expire"
+      }
+    }
+  ]
+}
+```
 
 ```hcl
 module "ecs_ecr" {
   source = "git::https://github.com/virsas/terraform-aws-ecs.git?ref=v1.1"
 
   ecr_create               = true
-  ecr_name                 = "vss/api"
+  ecr_name                 = "vss-api"
   ecr_encryption_type      = "KMS"
   ecr_kms_key              = "arn:aws:kms:eu-west-1:123456789012:key/12345678-1234-1234-1234-123456789012"
   ecr_image_tag_mutability = "IMMUTABLE"
   ecr_scan_on_push         = true
+  ecr_policy_create        = true
+  ecr_json_path            = "./json/ecr"
 }
 ```
 
@@ -180,6 +204,7 @@ module "ecs" {
 | [aws_ecs_task_definition.vss](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition) | resource |
 | [aws_ecs_service.vss](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service) | resource |
 | [aws_ecr_repository.vss](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository) | resource |
+| [aws_ecr_lifecycle_policy.vss](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_lifecycle_policy) | resource |
 
 ---
 
@@ -217,11 +242,13 @@ module "ecs" {
 | <a name="input_service_minperc"></a> [service\_minperc](#input\_service\_minperc) | Lower limit, as a percentage of the desired count, of tasks that must stay running and healthy during a deployment. Must be between `0` and `100`. | `number` | `50` | no |
 | <a name="input_service_wait"></a> [service\_wait](#input\_service\_wait) | Whether Terraform waits for the service to reach a steady state before completing. | `bool` | `true` | no |
 | <a name="input_ecr_create"></a> [ecr\_create](#input\_ecr\_create) | Whether to create the ECR repository. | `bool` | `false` | no |
-| <a name="input_ecr_name"></a> [ecr\_name](#input\_ecr\_name) | The name of the ECR repository, required when `ecr_create` is `true`. | `string` | `""` | no |
+| <a name="input_ecr_name"></a> [ecr\_name](#input\_ecr\_name) | The name of the ECR repository, required when `ecr_create` or `ecr_policy_create` is `true`. Also used as the lifecycle policy file name (`<ecr_name>.json`). | `string` | `""` | no |
 | <a name="input_ecr_encryption_type"></a> [ecr\_encryption\_type](#input\_ecr\_encryption\_type) | Encryption type for the repository. Allowed values are `AES256` and `KMS`. | `string` | `"AES256"` | no |
 | <a name="input_ecr_kms_key"></a> [ecr\_kms\_key](#input\_ecr\_kms\_key) | ARN of the KMS key used when `ecr_encryption_type` is `KMS`. Leave it `null` when using `AES256`. | `string` | `null` | no |
 | <a name="input_ecr_image_tag_mutability"></a> [ecr\_image\_tag\_mutability](#input\_ecr\_image\_tag\_mutability) | Tag mutability setting for the repository. Allowed values are `MUTABLE` and `IMMUTABLE`. | `string` | `"MUTABLE"` | no |
 | <a name="input_ecr_scan_on_push"></a> [ecr\_scan\_on\_push](#input\_ecr\_scan\_on\_push) | Whether images are scanned for vulnerabilities after being pushed to the repository. | `bool` | `false` | no |
+| <a name="input_ecr_policy_create"></a> [ecr\_policy\_create](#input\_ecr\_policy\_create) | Whether to create the ECR lifecycle policy. | `bool` | `false` | no |
+| <a name="input_ecr_json_path"></a> [ecr\_json\_path](#input\_ecr\_json\_path) | Path to the directory containing the ECR lifecycle policy JSON file, read as `<ecr_json_path>/<ecr_name>.json`. | `string` | `"./json/ecr"` | no |
 
 ---
 

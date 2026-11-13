@@ -244,8 +244,8 @@ variable "ecr_name" {
   type = string
   default = ""
   validation {
-    condition = var.ecr_create == false || (var.ecr_create == true && length(var.ecr_name) > 0)
-    error_message = "The 'ecr_name' variable is required when 'ecr_create' is set to true."
+    condition = (var.ecr_create == false && var.ecr_policy_create == false) || length(var.ecr_name) > 0
+    error_message = "The 'ecr_name' variable is required when 'ecr_create' or 'ecr_policy_create' is set to true."
   }
 }
 
@@ -279,4 +279,16 @@ variable "ecr_scan_on_push" {
   description = "Indicates whether images are scanned after being pushed to the repository. Defaults to false."
   type = bool
   default = false
+}
+
+variable "ecr_policy_create" {
+  description = "Whether to create the ECR lifecycle policy. Defaults to false."
+  type = bool
+  default = false
+}
+
+variable "ecr_json_path" {
+  description = "The path to the directory containing the ECR lifecycle policy JSON file. The file should be named 'ECR_NAME.json'. Defaults to './json/ecr'."
+  type = string
+  default = "./json/ecr"
 }
