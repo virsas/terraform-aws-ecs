@@ -1,5 +1,5 @@
 resource "aws_ecs_cluster" "vss" {
-  count  = var.cluster_create ? 1 : 0
+  count = var.cluster_create ? 1 : 0
 
   name = var.cluster_name
 
@@ -10,26 +10,27 @@ resource "aws_ecs_cluster" "vss" {
 }
 
 resource "aws_ecs_task_definition" "vss" {
-  count  = var.td_create ? 1 : 0
+  count = var.td_create ? 1 : 0
 
-  family                    = var.td_name
+  family = var.td_name
 
-  execution_role_arn        = var.td_execution_role
-  task_role_arn             = var.td_task_role
+  execution_role_arn = var.td_execution_role
+  task_role_arn      = var.td_task_role
 
-  network_mode              = "bridge"
+  network_mode = "bridge"
 
-  container_definitions     = templatefile("${var.td_json_path}/${var.td_file_name}.template", {
-    name = "${var.td_name}"
-    image = "${var.td_image}"
-    image_version = "${var.td_image_version}"
-    region = "${var.td_region}"
-    cpu = "${var.td_cpu}"
-    memory = "${var.td_memory}"
-    log_driver = "${var.td_log_driver}"
+  container_definitions = templatefile("${var.td_json_path}/${var.td_file_name}.template", {
+    name                  = "${var.td_name}"
+    image                 = "${var.td_image}"
+    image_version         = "${var.td_image_version}"
+    region                = "${var.td_region}"
+    cpu                   = "${var.td_cpu}"
+    memory                = "${var.td_memory}"
+    log_driver            = "${var.td_log_driver}"
     environment_variables = "${var.td_env_vars}"
-    secrets = "${var.td_secrets}"
-    ports = var.td_port_mapping
+    secrets               = "${var.td_secrets}"
+    ports                 = var.td_port_mapping
+    command               = jsonencode(var.td_command)
   })
 
   dynamic "volume" {
@@ -41,8 +42,8 @@ resource "aws_ecs_task_definition" "vss" {
       dynamic "efs_volume_configuration" {
         for_each = var.td_efs_id != null && var.td_efs_dir != null ? [1] : []
         content {
-          file_system_id     = var.td_efs_id
-          root_directory     = var.td_efs_dir
+          file_system_id = var.td_efs_id
+          root_directory = var.td_efs_dir
         }
       }
     }
@@ -50,24 +51,24 @@ resource "aws_ecs_task_definition" "vss" {
 }
 
 resource "aws_ecs_service" "vss" {
-  count  = var.service_create ? 1 : 0
+  count = var.service_create ? 1 : 0
 
-  name            = var.service_name
-  desired_count   = var.service_count
+  name          = var.service_name
+  desired_count = var.service_count
 
   cluster         = var.service_cluster
   task_definition = var.service_td
 
-  launch_type     = "EC2"
+  launch_type = "EC2"
 
-  deployment_maximum_percent = var.service_maxperc
+  deployment_maximum_percent         = var.service_maxperc
   deployment_minimum_healthy_percent = var.service_minperc
 
   wait_for_steady_state = var.service_wait
 }
 
 resource "aws_ecr_repository" "vss" {
-  count  = var.ecr_create ? 1 : 0
+  count = var.ecr_create ? 1 : 0
 
   name = var.ecr_name
 

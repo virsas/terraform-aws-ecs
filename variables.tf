@@ -2,24 +2,24 @@
 
 variable "cluster_create" {
   description = "Whether to create the ECS cluster. Defaults to false."
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "cluster_name" {
   description = "The name of the ECS cluster. This should be a unique identifier for your cluster."
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   validation {
-    condition = var.cluster_create == false || (var.cluster_create == true && length(var.cluster_name) > 0)
+    condition     = var.cluster_create == false || (var.cluster_create == true && length(var.cluster_name) > 0)
     error_message = "The 'cluster_name' variable is required when 'cluster_create' is set to true."
   }
 }
 
 variable "cluster_insights" {
   description = "Indicates whether to enable Amazon ECS Container Insights for the cluster. Valid values are 'enabled' or 'disabled'. Defaults to 'disabled'."
-  type = string
-  default = "disabled"
+  type        = string
+  default     = "disabled"
   validation {
     condition     = contains(["enabled", "disabled"], var.cluster_insights)
     error_message = "Invalid value for 'cluster_insights'. Must be one of: 'enabled', 'disabled'."
@@ -39,17 +39,17 @@ variable "td_name" {
   type        = string
   default     = ""
   validation {
-    condition = var.td_create == false || (var.td_create == true && length(var.td_name) > 0)
+    condition     = var.td_create == false || (var.td_create == true && length(var.td_name) > 0)
     error_message = "The 'td_name' variable is required when 'td_create' is set to true."
   }
 }
 
 variable "td_region" {
-  description           = "The AWS region to deploy resources in. Defaults to 'eu-west-1'."
-  type                  = string
+  description = "The AWS region to deploy resources in. Defaults to 'eu-west-1'."
+  type        = string
   default     = ""
   validation {
-    condition = var.td_create == false || (var.td_create == true && length(var.td_region) > 0)
+    condition     = var.td_create == false || (var.td_create == true && length(var.td_region) > 0)
     error_message = "The 'td_region' variable is required when 'td_create' is set to true."
   }
 }
@@ -77,7 +77,7 @@ variable "td_file_name" {
   type        = string
   default     = ""
   validation {
-    condition = var.td_create == false || (var.td_create == true && length(var.td_file_name) > 0)
+    condition     = var.td_create == false || (var.td_create == true && length(var.td_file_name) > 0)
     error_message = "The 'td_file_name' variable is required when 'td_create' is set to true."
   }
 }
@@ -87,7 +87,7 @@ variable "td_image" {
   type        = string
   default     = ""
   validation {
-    condition = var.td_create == false || (var.td_create == true && length(var.td_image) > 0)
+    condition     = var.td_create == false || (var.td_create == true && length(var.td_image) > 0)
     error_message = "The 'td_image' variable is required when 'td_create' is set to true."
   }
 }
@@ -154,10 +154,16 @@ variable "td_efs_dir" {
 
 variable "td_port_mapping" {
   description = "The port mapping configuration for the container. This should be a list of maps, each containing 'containerPort' and 'hostPort'."
-  type        = list(object({
+  type = list(object({
     containerPort = number
     hostPort      = number
   }))
+  default = []
+}
+
+variable "td_command" {
+  description = "Command arguments passed to the container entrypoint"
+  type        = list(string)
   default     = []
 }
 
@@ -165,50 +171,50 @@ variable "td_port_mapping" {
 
 variable "service_create" {
   description = "Whether to create the ECS service. Defaults to false."
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "service_name" {
   description = "The name of the ECS service. This should be a unique identifier for your service."
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   validation {
-    condition = var.service_create == false || (var.service_create == true && length(var.service_name) > 0)
+    condition     = var.service_create == false || (var.service_create == true && length(var.service_name) > 0)
     error_message = "The 'service_name' variable is required when 'service_create' is set to true."
   }
 }
 
 variable "service_count" {
   description = "The desired number of tasks for the service. Defaults to 1."
-  type = number
-  default = 1
+  type        = number
+  default     = 1
 }
 
 variable "service_cluster" {
   description = "The ID of the ECS cluster to create the service in."
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   validation {
-    condition = var.service_create == false || (var.service_create == true && length(var.service_cluster) > 0)
+    condition     = var.service_create == false || (var.service_create == true && length(var.service_cluster) > 0)
     error_message = "The 'service_cluster' variable is required when 'service_create' is set to true."
   }
 }
 
 variable "service_td" {
   description = "The ARN of the task definition to use for tasks in the service."
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   validation {
-    condition = var.service_create == false || (var.service_create == true && length(var.service_td) > 0)
+    condition     = var.service_create == false || (var.service_create == true && length(var.service_td) > 0)
     error_message = "The 'service_td' variable is required when 'service_create' is set to true."
   }
 }
 
 variable "service_maxperc" {
   description = "The upper limit (as a percentage of the service's desiredCount) of the number of running tasks that can be running in a service during a deployment. Defaults to 100."
-  type = number
-  default = 100
+  type        = number
+  default     = 100
   validation {
     condition     = var.service_maxperc >= 100 && var.service_maxperc <= 200
     error_message = "The 'service_maxperc' variable must be a number between 100 and 200."
@@ -217,8 +223,8 @@ variable "service_maxperc" {
 
 variable "service_minperc" {
   description = "The lower limit (as a percentage of the service's desiredCount) of the number of running tasks that must remain running and healthy in a service during a deployment. Defaults to 50."
-  type = number
-  default = 50
+  type        = number
+  default     = 50
   validation {
     condition     = var.service_minperc >= 0 && var.service_minperc <= 100
     error_message = "The 'service_minperc' variable must be a number between 0 and 100."
@@ -227,32 +233,32 @@ variable "service_minperc" {
 
 variable "service_wait" {
   description = "Indicates whether to wait for the service to reach a steady state. Defaults to true."
-  type = bool
-  default = true
+  type        = bool
+  default     = true
 }
 
 # ECR
 
 variable "ecr_create" {
   description = "Whether to create the ECR repository. Defaults to false."
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "ecr_name" {
   description = "The name of the ECR repository. This should be a unique identifier for your repository."
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   validation {
-    condition = (var.ecr_create == false && var.ecr_policy_create == false) || length(var.ecr_name) > 0
+    condition     = (var.ecr_create == false && var.ecr_policy_create == false) || length(var.ecr_name) > 0
     error_message = "The 'ecr_name' variable is required when 'ecr_create' or 'ecr_policy_create' is set to true."
   }
 }
 
 variable "ecr_encryption_type" {
   description = "The encryption type to use for the repository. Valid values are 'AES256' or 'KMS'. Defaults to 'AES256'."
-  type = string
-  default = "AES256"
+  type        = string
+  default     = "AES256"
   validation {
     condition     = contains(["AES256", "KMS"], var.ecr_encryption_type)
     error_message = "Invalid value for 'ecr_encryption_type'. Must be one of: 'AES256', 'KMS'."
@@ -261,14 +267,14 @@ variable "ecr_encryption_type" {
 
 variable "ecr_kms_key" {
   description = "The ARN of the KMS key to use when encrypting the repository with 'KMS' encryption type. If 'ecr_encryption_type' is 'AES256', this value is ignored."
-  type = string
-  default = null
+  type        = string
+  default     = null
 }
 
 variable "ecr_image_tag_mutability" {
   description = "The tag mutability setting for the repository. Valid values are 'MUTABLE' or 'IMMUTABLE'. Defaults to 'MUTABLE'."
-  type = string
-  default = "MUTABLE"
+  type        = string
+  default     = "MUTABLE"
   validation {
     condition     = contains(["MUTABLE", "IMMUTABLE"], var.ecr_image_tag_mutability)
     error_message = "Invalid value for 'ecr_image_tag_mutability'. Must be one of: 'MUTABLE', 'IMMUTABLE'."
@@ -277,18 +283,18 @@ variable "ecr_image_tag_mutability" {
 
 variable "ecr_scan_on_push" {
   description = "Indicates whether images are scanned after being pushed to the repository. Defaults to false."
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "ecr_policy_create" {
   description = "Whether to create the ECR lifecycle policy. Defaults to false."
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "ecr_json_path" {
   description = "The path to the directory containing the ECR lifecycle policy JSON file. The file should be named 'ECR_NAME.json'. Defaults to './json/ecr'."
-  type = string
-  default = "./json/ecr"
+  type        = string
+  default     = "./json/ecr"
 }

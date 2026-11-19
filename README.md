@@ -5,7 +5,7 @@ A Terraform module for managing [Amazon Elastic Container Service (ECS)](https:/
 ## Features
 
 - **Cluster Management**: Creates an ECS cluster with optional Container Insights monitoring.
-- **Task Definitions**: Renders a container definition from a local `.template` file and substitutes image, CPU, memory, region, logging, environment variable, secret and port mapping values into it.
+- **Task Definitions**: Renders a container definition from a local `.template` file and substitutes image, CPU, memory, region, logging, environment variable, secret, port mapping and command values into it.
 - **EFS Volumes**: Optionally attaches an Amazon EFS file system to the task definition as a named volume with a configurable root directory.
 - **Service Management**: Creates an EC2 launch type service with a desired task count, deployment percentage limits and optional steady state waiting.
 - **ECR Repositories**: Creates a container image repository with AES256 or KMS encryption, mutable or immutable tags and optional scan on push.
@@ -89,7 +89,7 @@ module "ecs_ecr" {
 
 ### Task Definition Example
 
-Create a task definition from a template file. The module reads `${td_json_path}/${td_file_name}.template` and substitutes the `name`, `image`, `image_version`, `region`, `cpu`, `memory`, `log_driver`, `environment_variables`, `secrets` and `ports` placeholders, so the template has to reference those names.
+Create a task definition from a template file. The module reads `${td_json_path}/${td_file_name}.template` and substitutes the `name`, `image`, `image_version`, `region`, `cpu`, `memory`, `log_driver`, `environment_variables`, `secrets`, `ports` and `command` placeholders, so the template has to reference those names.
 
 Given `./json/td/api.template`:
 
@@ -101,6 +101,7 @@ Given `./json/td/api.template`:
     "cpu": ${cpu},
     "memory": ${memory},
     "essential": true,
+    "command": ${command},
     "portMappings": ${jsonencode(ports)},
     "environment": ${environment_variables},
     "secrets": ${secrets},
@@ -147,6 +148,8 @@ module "ecs_td" {
       hostPort      = 0
     }
   ]
+
+  td_command = ["npm", "run", "start"]
 }
 ```
 
@@ -233,6 +236,7 @@ module "ecs" {
 | <a name="input_td_efs_id"></a> [td\_efs\_id](#input\_td\_efs\_id) | ID of the EFS file system to mount into the volume defined by `td_volume`. | `string` | `null` | no |
 | <a name="input_td_efs_dir"></a> [td\_efs\_dir](#input\_td\_efs\_dir) | Directory within the EFS file system to mount as the root directory of the volume. | `string` | `"/"` | no |
 | <a name="input_td_port_mapping"></a> [td\_port\_mapping](#input\_td\_port\_mapping) | Port mappings substituted into the `ports` placeholder of the template file. Use a `hostPort` of `0` for dynamic port mapping. | <pre>list(object({<br>  containerPort = number<br>  hostPort      = number<br>}))</pre> | `[]` | no |
+| <a name="input_td_command"></a> [td\_command](#input\_td\_command) | Command arguments passed to the container entrypoint, JSON-encoded and substituted into the `command` placeholder of the template file. | `list(string)` | `[]` | no |
 | <a name="input_service_create"></a> [service\_create](#input\_service\_create) | Whether to create the ECS service. | `bool` | `false` | no |
 | <a name="input_service_name"></a> [service\_name](#input\_service\_name) | The name of the ECS service, required when `service_create` is `true`. | `string` | `""` | no |
 | <a name="input_service_count"></a> [service\_count](#input\_service\_count) | The desired number of tasks for the service. | `number` | `1` | no |
